@@ -57,8 +57,6 @@ def build_ffmpeg_command(input_path, output_path):
     grain = random.randint(6, 12)
     lens_k1 = random.uniform(-0.03, -0.01)
     lens_k2 = random.uniform(0.005, 0.02)
-    blur_center = random.uniform(0.65, 0.78)
-    blur_side = round((1 - blur_center) / 2, 3)
     hiss_amp = random.uniform(0.002, 0.005)
 
     make, model = random.choice(CAMERA_PROFILES)
@@ -76,8 +74,8 @@ def build_ffmpeg_command(input_path, output_path):
         f"hue=h={hue:.2f}:s={saturation:.3f},"
         f"eq=brightness={brightness:.3f}:contrast={contrast:.3f},"
         f"lenscorrection=k1={lens_k1:.3f}:k2={lens_k2:.3f},"
-        f"tmix=frames=3:weights='{blur_side} {blur_center:.3f} {blur_side}',"
         f"noise=alls={grain}:allf=t+u,"
+        f"format=yuv420p,"
         f"setpts={speed:.3f}*PTS[v]"
     )
 
