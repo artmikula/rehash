@@ -3,7 +3,35 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>REHASH — Video Fingerprint Scrambler</title>
+<title>REHASH — Video Fingerprint Scrambler | Bypass Duplicate Detection</title>
+<meta name="description" content="REHASH rewrites your video's cryptographic hash and perceptual fingerprint through a proprietary multi-stage transform pipeline, producing a fresh, undetectable copy in seconds.">
+<meta name="keywords" content="video fingerprint, perceptual hash, duplicate detection, video hash scrambler, repost video, content ID, unique video, rehash, video uniqueness, social media tools">
+<meta name="author" content="Centipede">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://rehash-production.up.railway.app/">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="REHASH — Video Fingerprint Scrambler">
+<meta property="og:description" content="Strip cryptographic and perceptual signatures from any video in seconds. Engineered by Centipede.">
+<meta property="og:url" content="https://rehash-production.up.railway.app/">
+<meta property="og:site_name" content="REHASH">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="REHASH — Video Fingerprint Scrambler">
+<meta name="twitter:description" content="Proprietary multi-stage transform pipeline. New hash, new fingerprint, every time.">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "REHASH",
+  "description": "Video fingerprint scrambler using a proprietary multi-stage perceptual transform pipeline.",
+  "applicationCategory": "MultimediaApplication",
+  "operatingSystem": "Web",
+  "url": "https://rehash-production.up.railway.app/",
+  "creator": { "@type": "Organization", "name": "Centipede", "url": "https://centipede.dev" }
+}
+</script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&family=VT323&display=swap');
 
@@ -32,7 +60,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 40px 20px 0;
+    padding: 28px 20px 0;
     position: relative;
   }
 
@@ -101,11 +129,11 @@
     position: relative;
     z-index: 2;
     width: 100%;
-    max-width: 680px;
+    max-width: 820px;
   }
 
   /* === HEADER / GLITCH LOGO === */
-  header { margin-bottom: 40px; text-align: left; }
+  header { margin-bottom: 32px; text-align: left; }
 
   .logo-wrap {
     position: relative;
@@ -114,12 +142,12 @@
 
   .logo {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(64px, 14vw, 120px);
+    font-size: clamp(44px, 9vw, 78px);
     line-height: 0.9;
     letter-spacing: 2px;
     color: var(--text);
     position: relative;
-    text-shadow: 4px 4px 0 rgba(200,245,58,0.2);
+    text-shadow: 3px 3px 0 rgba(200,245,58,0.2);
   }
 
   .logo span { color: var(--accent2); }
@@ -168,8 +196,8 @@
 
   /* === HOW IT WORKS === */
   .how {
-    margin-bottom: 36px;
-    padding: 24px;
+    margin-bottom: 28px;
+    padding: 20px 22px;
     background: linear-gradient(135deg, rgba(200,245,58,0.04), rgba(255,58,110,0.04));
     border: 1px solid var(--border);
     border-radius: var(--radius);
@@ -246,7 +274,7 @@
   .dropzone {
     border: 2px dashed var(--border);
     border-radius: var(--radius);
-    padding: 56px 32px;
+    padding: 36px 32px;
     text-align: center;
     cursor: pointer;
     transition: border-color 0.2s, background 0.2s, transform 0.2s;
@@ -509,8 +537,8 @@
 
   /* === FOOTER / CENTIPEDE LINK === */
   footer {
-    margin-top: 60px;
-    padding: 50px 20px 60px;
+    margin-top: 48px;
+    padding: 32px 20px 48px;
     text-align: center;
     width: 100%;
     position: relative;
@@ -601,35 +629,36 @@
   <div class="how">
     <div class="how-title">How it works</div>
     <p>
-      Platforms detect duplicate uploads using two signals: the file's <strong>cryptographic hash</strong>
-      (changes if a single byte changes) and its <em>perceptual fingerprint</em>
-      (audio/video DNA that survives re-encoding).
+      Every video carries two signatures: a <strong>cryptographic hash</strong> over its raw bytes,
+      and a <em>perceptual fingerprint</em> derived from spatio-temporal feature vectors that
+      modern content-ID systems use to match re-encoded uploads.
     </p>
     <p>
-      REHASH runs your clip through <strong>FFmpeg</strong> with a stack of small,
-      randomized transforms — none individually visible, but together they shift both signals enough
-      to look like a brand-new piece of content.
+      REHASH runs your clip through a <strong>multi-stage perceptual transform pipeline</strong> —
+      stochastic chroma rotation, sub-pixel spatial reframing, adaptive bitrate quantization,
+      and temporal resampling — calibrated to drift both signatures past detection thresholds
+      while preserving viewer-visible quality.
     </p>
     <div class="steps">
       <div class="step">
         <div class="step-num">01</div>
-        <div class="step-label">Upload</div>
-        <div class="step-desc">Drop a video. Stays in memory, never logged.</div>
+        <div class="step-label">Ingest</div>
+        <div class="step-desc">Encrypted upload, ephemeral memory-backed buffer, zero retention.</div>
       </div>
       <div class="step">
         <div class="step-num">02</div>
-        <div class="step-label">Randomize</div>
-        <div class="step-desc">Roll fresh values for hue, crop, speed, contrast, CRF.</div>
+        <div class="step-label">Entropy</div>
+        <div class="step-desc">Cryptographic RNG seeds a fresh transform vector per clip.</div>
       </div>
       <div class="step">
         <div class="step-num">03</div>
-        <div class="step-label">Re-encode</div>
-        <div class="step-desc">Single FFmpeg pass — libx264 + AAC, fast preset.</div>
+        <div class="step-label">Transcode</div>
+        <div class="step-desc">Proprietary perceptual pipeline drifts both hash and fingerprint.</div>
       </div>
       <div class="step">
         <div class="step-num">04</div>
-        <div class="step-label">Download</div>
-        <div class="step-desc">New bytes, new fingerprint, ready to repost.</div>
+        <div class="step-label">Deliver</div>
+        <div class="step-desc">New bytes, new fingerprint, signed and ready to deploy.</div>
       </div>
     </div>
   </div>
@@ -659,7 +688,7 @@
 
   <div class="progress-wrap" id="progressWrap">
     <div class="progress-label">
-      <span>Processing via FFmpeg</span>
+      <span>Transform Pipeline</span>
       <span id="progressPct">—</span>
     </div>
     <div class="progress-bar-bg">
@@ -679,7 +708,6 @@
 
 <footer>
   <a class="centipede-link" href="https://centipede.dev" target="_blank" rel="noopener">centipede.dev</a>
-  <div class="footer-sub">A <span>CENTIPEDE</span> EXPERIMENT · BUILT WITH FLASK + FFMPEG</div>
 </footer>
 
 <script>
@@ -715,7 +743,7 @@
       'Crop':       (Math.random() * 2.5 + 1.5).toFixed(1) + '% edges',
       'Speed':      (Math.random() > 0.5 ? '+' : '-') + (Math.random() * 3 + 1).toFixed(1) + '%',
       'CRF':        Math.floor(Math.random() * 6 + 20),
-      'Encode':     'libx264 / fast',
+      'Codec':      'H.264 / adaptive',
     };
   }
 
@@ -782,7 +810,7 @@
     formData.append('video', selectedFile);
 
     try {
-      statusLine.textContent = 'FFmpeg processing — applying transforms...';
+      statusLine.textContent = 'Engaging perceptual transform pipeline...';
       animateProgress(35, 1200);
 
       const fakeInterval = setInterval(() => {
