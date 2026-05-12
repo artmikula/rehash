@@ -5,20 +5,24 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>REHASH — Video Fingerprint Scrambler</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&family=VT323&display=swap');
 
   :root {
-    --bg: #0a0a0a;
-    --surface: #111111;
-    --border: #222222;
+    --bg: #050505;
+    --surface: #121212;
+    --border: #2a2a2a;
     --accent: #c8f53a;
     --accent2: #ff3a6e;
-    --text: #e8e8e8;
-    --muted: #555;
+    --accent3: #3af5d4;
+    --text: #f5f5f5;
+    --muted: #a8a8a8;
+    --dim: #707070;
     --radius: 4px;
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body { overflow-x: hidden; }
 
   body {
     background: var(--bg);
@@ -28,74 +32,255 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    padding: 40px 20px;
+    padding: 40px 20px 0;
     position: relative;
-    overflow-x: hidden;
   }
 
-  /* grid background */
-  body::before {
-    content: '';
+  /* === ANIMATED BACKGROUNDS === */
+  .bg-grid {
     position: fixed;
-    inset: 0;
+    inset: -2px;
     background-image:
-      linear-gradient(rgba(200,245,58,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(200,245,58,0.03) 1px, transparent 1px);
+      linear-gradient(rgba(200,245,58,0.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(200,245,58,0.07) 1px, transparent 1px);
     background-size: 40px 40px;
     pointer-events: none;
     z-index: 0;
+    animation: grid-drift 20s linear infinite;
+  }
+  @keyframes grid-drift {
+    from { transform: translate(0, 0); }
+    to   { transform: translate(40px, 40px); }
+  }
+
+  .bg-scanlines {
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0px,
+      transparent 2px,
+      rgba(255,255,255,0.02) 2px,
+      rgba(255,255,255,0.02) 3px
+    );
+    pointer-events: none;
+    z-index: 1;
+    mix-blend-mode: overlay;
+  }
+
+  .bg-vignette {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.7) 100%);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .bg-blob {
+    position: fixed;
+    width: 400px;
+    height: 400px;
+    border-radius: 50%;
+    filter: blur(120px);
+    opacity: 0.25;
+    pointer-events: none;
+    z-index: 0;
+    animation: blob-float 18s ease-in-out infinite;
+  }
+  .bg-blob.b1 { background: var(--accent);  top: -100px; left: -100px; }
+  .bg-blob.b2 { background: var(--accent2); bottom: -100px; right: -100px; animation-delay: -6s; }
+  .bg-blob.b3 { background: var(--accent3); top: 40%; left: 50%; animation-delay: -12s; opacity: 0.18; }
+
+  @keyframes blob-float {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33%      { transform: translate(60px, -40px) scale(1.1); }
+    66%      { transform: translate(-40px, 50px) scale(0.9); }
   }
 
   .wrapper {
     position: relative;
-    z-index: 1;
+    z-index: 2;
     width: 100%;
-    max-width: 620px;
+    max-width: 680px;
   }
 
-  header {
-    margin-bottom: 48px;
-    text-align: left;
+  /* === HEADER / GLITCH LOGO === */
+  header { margin-bottom: 40px; text-align: left; }
+
+  .logo-wrap {
+    position: relative;
+    display: inline-block;
   }
 
   .logo {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(52px, 12vw, 96px);
+    font-size: clamp(64px, 14vw, 120px);
     line-height: 0.9;
     letter-spacing: 2px;
-    color: var(--accent);
-    text-shadow: 4px 4px 0 rgba(200,245,58,0.15);
+    color: var(--text);
+    position: relative;
+    text-shadow: 4px 4px 0 rgba(200,245,58,0.2);
   }
 
-  .logo span {
+  .logo span { color: var(--accent2); }
+
+  .logo::before,
+  .logo::after {
+    content: 'REHASH';
+    position: absolute;
+    inset: 0;
+    font-family: inherit;
+    color: var(--accent);
+    mix-blend-mode: screen;
+    pointer-events: none;
+  }
+  .logo::before {
+    animation: glitch-x 3.5s infinite steps(1);
     color: var(--accent2);
+  }
+  .logo::after {
+    animation: glitch-y 4.2s infinite steps(1);
+    color: var(--accent3);
+  }
+  @keyframes glitch-x {
+    0%, 92%, 100% { transform: translate(0, 0); clip-path: inset(0 0 0 0); opacity: 0; }
+    93%           { transform: translate(-3px, 0); clip-path: inset(20% 0 60% 0); opacity: 1; }
+    95%           { transform: translate(4px, -1px); clip-path: inset(70% 0 10% 0); opacity: 1; }
+    97%           { transform: translate(-2px, 1px); clip-path: inset(40% 0 35% 0); opacity: 1; }
+  }
+  @keyframes glitch-y {
+    0%, 90%, 100% { transform: translate(0, 0); clip-path: inset(0 0 0 0); opacity: 0; }
+    91%           { transform: translate(3px, 2px); clip-path: inset(10% 0 75% 0); opacity: 1; }
+    94%           { transform: translate(-2px, -2px); clip-path: inset(60% 0 20% 0); opacity: 1; }
   }
 
   .tagline {
-    margin-top: 12px;
-    font-size: 11px;
-    color: var(--muted);
-    letter-spacing: 3px;
+    margin-top: 14px;
+    font-size: 12px;
+    color: var(--accent);
+    letter-spacing: 4px;
     text-transform: uppercase;
+    font-weight: 700;
+  }
+  .tagline::before { content: '> '; color: var(--accent2); }
+  .tagline::after  { content: '_'; color: var(--accent2); animation: caret-blink 1s steps(1) infinite; }
+  @keyframes caret-blink { 50% { opacity: 0; } }
+
+  /* === HOW IT WORKS === */
+  .how {
+    margin-bottom: 36px;
+    padding: 24px;
+    background: linear-gradient(135deg, rgba(200,245,58,0.04), rgba(255,58,110,0.04));
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    position: relative;
+    overflow: hidden;
+  }
+  .how::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(200,245,58,0.06), transparent);
+    transform: translateX(-100%);
+    animation: shimmer 6s ease-in-out infinite;
+  }
+  @keyframes shimmer {
+    50% { transform: translateX(100%); }
+    100% { transform: translateX(100%); }
   }
 
-  /* Drop zone */
+  .how-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    letter-spacing: 3px;
+    color: var(--accent);
+    margin-bottom: 14px;
+  }
+  .how-title::before { content: '◆ '; color: var(--accent2); }
+
+  .how p {
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+  .how p:last-child { margin-bottom: 0; }
+  .how strong { color: var(--accent); font-weight: 700; }
+  .how em { color: var(--accent2); font-style: normal; font-weight: 700; }
+
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    margin-top: 16px;
+  }
+  .step {
+    background: rgba(0,0,0,0.4);
+    border: 1px solid var(--border);
+    padding: 12px;
+    border-radius: var(--radius);
+    position: relative;
+  }
+  .step-num {
+    font-family: 'VT323', monospace;
+    font-size: 28px;
+    color: var(--accent2);
+    line-height: 1;
+  }
+  .step-label {
+    margin-top: 4px;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--text);
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .step-desc {
+    margin-top: 6px;
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* === DROPZONE === */
   .dropzone {
     border: 2px dashed var(--border);
     border-radius: var(--radius);
     padding: 56px 32px;
     text-align: center;
     cursor: pointer;
-    transition: border-color 0.2s, background 0.2s;
+    transition: border-color 0.2s, background 0.2s, transform 0.2s;
     position: relative;
     background: var(--surface);
+    overflow: hidden;
   }
+  .dropzone::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: conic-gradient(from var(--angle, 0deg), transparent 70%, var(--accent) 85%, transparent 100%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 0;
+  }
+  .dropzone:hover::before,
+  .dropzone.dragover::before {
+    opacity: 0.4;
+    animation: spin-border 4s linear infinite;
+  }
+  .dropzone > * { position: relative; z-index: 1; }
+  @property --angle {
+    syntax: '<angle>';
+    initial-value: 0deg;
+    inherits: false;
+  }
+  @keyframes spin-border { to { --angle: 360deg; } }
 
   .dropzone:hover,
   .dropzone.dragover {
     border-color: var(--accent);
-    background: rgba(200,245,58,0.04);
+    background: rgba(200,245,58,0.06);
+    transform: scale(1.01);
   }
 
   .dropzone input[type="file"] {
@@ -105,262 +290,349 @@
     cursor: pointer;
     width: 100%;
     height: 100%;
+    z-index: 2;
   }
 
   .drop-icon {
-    font-size: 40px;
+    font-size: 48px;
     margin-bottom: 16px;
     display: block;
-    opacity: 0.6;
+    color: var(--accent);
+    animation: float 3s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-6px); }
   }
 
-  .drop-label {
-    font-size: 13px;
-    color: var(--muted);
-    line-height: 1.8;
-  }
-
+  .drop-label { font-size: 14px; color: var(--text); line-height: 1.8; }
   .drop-label strong {
     color: var(--accent);
     display: block;
-    font-size: 15px;
+    font-size: 17px;
     margin-bottom: 4px;
+    letter-spacing: 1px;
   }
 
   .file-formats {
     margin-top: 10px;
-    font-size: 10px;
+    font-size: 11px;
     letter-spacing: 2px;
-    color: #333;
+    color: var(--dim);
     text-transform: uppercase;
   }
 
-  /* Selected file display */
+  /* === FILE INFO === */
   .file-info {
     display: none;
     margin-top: 20px;
     padding: 16px 20px;
-    background: rgba(200,245,58,0.06);
-    border: 1px solid rgba(200,245,58,0.2);
+    background: rgba(200,245,58,0.08);
+    border: 1px solid rgba(200,245,58,0.3);
     border-radius: var(--radius);
-    font-size: 12px;
+    font-size: 13px;
     color: var(--accent);
-    display: none;
     align-items: center;
     gap: 12px;
   }
+  .file-info.visible { display: flex; }
+  .file-info .file-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
+  .file-size { color: var(--muted); white-space: nowrap; font-size: 12px; }
 
-  .file-info.visible {
-    display: flex;
-  }
-
-  .file-info .file-name {
-    flex: 1;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .file-size {
-    color: var(--muted);
-    white-space: nowrap;
-  }
-
-  /* Params panel */
+  /* === PARAMS === */
   .params-panel {
     display: none;
     margin-top: 16px;
-    padding: 16px 20px;
+    padding: 18px 20px;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    font-size: 11px;
+    font-size: 12px;
   }
-
   .params-panel.visible { display: block; }
-
   .params-title {
-    font-size: 10px;
+    font-size: 11px;
     letter-spacing: 3px;
     text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 12px;
+    color: var(--accent);
+    margin-bottom: 14px;
+    font-weight: 700;
   }
-
   .params-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 8px 24px;
   }
-
   .param-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 4px 0;
+    padding: 5px 0;
     border-bottom: 1px solid #1a1a1a;
   }
-
   .param-key { color: var(--muted); }
-  .param-val { color: var(--accent); font-weight: 700; }
+  .param-val { color: var(--accent); font-weight: 700; font-family: 'VT323', monospace; font-size: 16px; }
 
-  /* Button */
+  /* === BUTTON === */
   .btn {
     width: 100%;
     margin-top: 24px;
-    padding: 18px;
+    padding: 20px;
     background: var(--accent);
     color: #0a0a0a;
     border: none;
     border-radius: var(--radius);
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 22px;
-    letter-spacing: 3px;
+    font-size: 26px;
+    letter-spacing: 4px;
     cursor: pointer;
-    transition: transform 0.1s, background 0.2s;
+    transition: transform 0.1s, background 0.2s, box-shadow 0.2s;
     position: relative;
     overflow: hidden;
   }
-
   .btn:disabled {
     background: #2a2a2a;
-    color: var(--muted);
+    color: var(--dim);
     cursor: not-allowed;
     transform: none;
+    box-shadow: none;
   }
-
-  .btn:not(:disabled):hover { background: #d4ff45; transform: translateY(-1px); }
+  .btn:not(:disabled) { box-shadow: 0 0 30px rgba(200,245,58,0.3); }
+  .btn:not(:disabled):hover {
+    background: #d4ff45;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 40px rgba(200,245,58,0.5);
+  }
   .btn:not(:disabled):active { transform: translateY(1px); }
 
-  /* Progress bar */
+  /* === PROGRESS === */
   .progress-wrap {
     display: none;
     margin-top: 24px;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 20px;
+    padding: 22px;
   }
-
   .progress-wrap.visible { display: block; }
-
   .progress-label {
-    font-size: 11px;
-    color: var(--muted);
+    font-size: 12px;
+    color: var(--text);
     letter-spacing: 2px;
     text-transform: uppercase;
     margin-bottom: 12px;
     display: flex;
     justify-content: space-between;
+    font-weight: 700;
   }
-
   .progress-bar-bg {
     background: var(--border);
     border-radius: 2px;
-    height: 4px;
+    height: 6px;
     overflow: hidden;
+    position: relative;
   }
-
   .progress-bar-fill {
     height: 100%;
-    background: var(--accent);
+    background: linear-gradient(90deg, var(--accent2), var(--accent), var(--accent3));
+    background-size: 200% 100%;
     width: 0%;
     transition: width 0.3s;
     border-radius: 2px;
-    animation: pulse-bar 1.5s ease-in-out infinite;
+    animation: gradient-slide 2s linear infinite;
   }
-
-  @keyframes pulse-bar {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.6; }
+  @keyframes gradient-slide {
+    from { background-position: 0% 0; }
+    to   { background-position: 200% 0; }
   }
-
   .status-line {
-    margin-top: 10px;
-    font-size: 11px;
-    color: var(--muted);
-    font-style: italic;
+    margin-top: 12px;
+    font-size: 12px;
+    color: var(--accent);
+    font-family: 'VT323', monospace;
+    font-size: 16px;
   }
+  .status-line::before { content: '> '; color: var(--accent2); }
 
-  /* Result */
+  /* === RESULT === */
   .result {
     display: none;
     margin-top: 20px;
-    padding: 20px;
-    background: rgba(200,245,58,0.06);
-    border: 1px solid rgba(200,245,58,0.3);
+    padding: 24px;
+    background: rgba(200,245,58,0.08);
+    border: 1px solid rgba(200,245,58,0.4);
     border-radius: var(--radius);
     text-align: center;
+    animation: result-pop 0.4s ease-out;
   }
-
   .result.visible { display: block; }
-
+  @keyframes result-pop {
+    from { transform: scale(0.9); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+  }
   .result-title {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 28px;
+    font-size: 36px;
     color: var(--accent);
-    letter-spacing: 2px;
-    margin-bottom: 4px;
+    letter-spacing: 3px;
+    margin-bottom: 6px;
   }
-
-  .result-sub {
-    font-size: 11px;
-    color: var(--muted);
-    margin-bottom: 16px;
-  }
-
+  .result-sub { font-size: 12px; color: var(--text); margin-bottom: 18px; }
   .btn-download {
     display: inline-block;
-    padding: 12px 32px;
-    background: transparent;
-    color: var(--accent);
-    border: 1px solid var(--accent);
-    border-radius: var(--radius);
-    font-family: 'Space Mono', monospace;
-    font-size: 12px;
-    text-decoration: none;
-    cursor: pointer;
-    transition: background 0.2s, color 0.2s;
-    letter-spacing: 1px;
-  }
-
-  .btn-download:hover {
+    padding: 14px 36px;
     background: var(--accent);
     color: #0a0a0a;
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform 0.2s;
+    letter-spacing: 3px;
   }
+  .btn-download:hover { transform: translateY(-2px); }
 
-  /* Error */
+  /* === ERROR === */
   .error-box {
     display: none;
     margin-top: 20px;
     padding: 16px 20px;
-    background: rgba(255,58,110,0.08);
-    border: 1px solid rgba(255,58,110,0.3);
+    background: rgba(255,58,110,0.1);
+    border: 1px solid rgba(255,58,110,0.4);
     border-radius: var(--radius);
-    font-size: 12px;
+    font-size: 13px;
     color: var(--accent2);
   }
-
   .error-box.visible { display: block; }
 
+  /* === FOOTER / CENTIPEDE LINK === */
   footer {
-    margin-top: 48px;
-    font-size: 10px;
-    color: #333;
-    letter-spacing: 2px;
+    margin-top: 60px;
+    padding: 50px 20px 60px;
     text-align: center;
+    width: 100%;
+    position: relative;
+    z-index: 2;
   }
 
-  footer span { color: var(--accent2); }
+  .centipede-link {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(48px, 10vw, 88px);
+    letter-spacing: 4px;
+    color: var(--text);
+    text-decoration: none;
+    display: inline-block;
+    position: relative;
+    padding: 12px 24px;
+    transition: transform 0.3s, letter-spacing 0.3s;
+    background: linear-gradient(
+      90deg,
+      var(--accent2) 0%,
+      var(--accent) 33%,
+      var(--accent3) 66%,
+      var(--accent2) 100%
+    );
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gradient-slide 4s linear infinite;
+  }
+
+  .centipede-link:hover {
+    transform: scale(1.05);
+    letter-spacing: 6px;
+  }
+
+  .centipede-link::before {
+    content: '◢';
+    position: absolute;
+    left: -20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--accent2);
+    font-size: 0.5em;
+    -webkit-text-fill-color: var(--accent2);
+    animation: pulse-arrow 1.5s ease-in-out infinite;
+  }
+  .centipede-link::after {
+    content: '◣';
+    position: absolute;
+    right: -20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--accent3);
+    font-size: 0.5em;
+    -webkit-text-fill-color: var(--accent3);
+    animation: pulse-arrow 1.5s ease-in-out infinite;
+  }
+  @keyframes pulse-arrow {
+    0%, 100% { opacity: 0.4; }
+    50%      { opacity: 1; }
+  }
+
+  .footer-sub {
+    margin-top: 20px;
+    font-size: 11px;
+    color: var(--dim);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+  .footer-sub span { color: var(--accent); }
 </style>
 </head>
 <body>
 
+<div class="bg-grid"></div>
+<div class="bg-blob b1"></div>
+<div class="bg-blob b2"></div>
+<div class="bg-blob b3"></div>
+<div class="bg-scanlines"></div>
+<div class="bg-vignette"></div>
+
 <div class="wrapper">
   <header>
-    <div class="logo">RE<span>HASH</span></div>
-    <div class="tagline">Video Fingerprint Scrambler — Evade Duplicate Detection</div>
+    <div class="logo-wrap"><div class="logo">RE<span>HASH</span></div></div>
+    <div class="tagline">Video Fingerprint Scrambler</div>
   </header>
+
+  <div class="how">
+    <div class="how-title">How it works</div>
+    <p>
+      Platforms detect duplicate uploads using two signals: the file's <strong>cryptographic hash</strong>
+      (changes if a single byte changes) and its <em>perceptual fingerprint</em>
+      (audio/video DNA that survives re-encoding).
+    </p>
+    <p>
+      REHASH runs your clip through <strong>FFmpeg</strong> with a stack of small,
+      randomized transforms — none individually visible, but together they shift both signals enough
+      to look like a brand-new piece of content.
+    </p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-label">Upload</div>
+        <div class="step-desc">Drop a video. Stays in memory, never logged.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-label">Randomize</div>
+        <div class="step-desc">Roll fresh values for hue, crop, speed, contrast, CRF.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-label">Re-encode</div>
+        <div class="step-desc">Single FFmpeg pass — libx264 + AAC, fast preset.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">04</div>
+        <div class="step-label">Download</div>
+        <div class="step-desc">New bytes, new fingerprint, ready to repost.</div>
+      </div>
+    </div>
+  </div>
 
   <div class="dropzone" id="dropzone">
     <input type="file" id="fileInput" accept="video/*" />
@@ -399,15 +671,16 @@
   <div class="result" id="result">
     <div class="result-title">✓ REHASHED</div>
     <div class="result-sub">New MD5 · New perceptual fingerprint · Ready to repost</div>
-    <a class="btn-download" id="downloadLink" href="#" download>↓ Download File</a>
+    <a class="btn-download" id="downloadLink" href="#" download>↓ DOWNLOAD FILE</a>
   </div>
 
   <div class="error-box" id="errorBox"></div>
-
-  <footer>
-    CENTIPEDE DEV · <span>REHASH</span> · runs locally via Flask + FFmpeg
-  </footer>
 </div>
+
+<footer>
+  <a class="centipede-link" href="https://centipede.dev" target="_blank" rel="noopener">centipede.dev</a>
+  <div class="footer-sub">A <span>CENTIPEDE</span> EXPERIMENT · BUILT WITH FLASK + FFMPEG</div>
+</footer>
 
 <script>
   const dropzone = document.getElementById('dropzone');
@@ -435,14 +708,14 @@
 
   function randomParams() {
     return {
-      'Hue shift': (Math.random() * 2 + 1.5).toFixed(2) + '°',
+      'Hue shift':  (Math.random() * 2 + 1.5).toFixed(2) + '°',
       'Saturation': '+' + (Math.random() * 6 + 2).toFixed(1) + '%',
       'Brightness': '+' + (Math.random() * 2 + 1).toFixed(2),
-      'Contrast': '+' + (Math.random() * 3 + 1).toFixed(2) + '%',
-      'Crop': (Math.random() * 2.5 + 1.5).toFixed(1) + '% edges',
-      'Speed': (Math.random() > 0.5 ? '+' : '-') + (Math.random() * 3 + 1).toFixed(1) + '%',
-      'CRF': Math.floor(Math.random() * 6 + 20),
-      'Encode': 'libx264 / fast',
+      'Contrast':   '+' + (Math.random() * 3 + 1).toFixed(2) + '%',
+      'Crop':       (Math.random() * 2.5 + 1.5).toFixed(1) + '% edges',
+      'Speed':      (Math.random() > 0.5 ? '+' : '-') + (Math.random() * 3 + 1).toFixed(1) + '%',
+      'CRF':        Math.floor(Math.random() * 6 + 20),
+      'Encode':     'libx264 / fast',
     };
   }
 
@@ -512,16 +785,12 @@
       statusLine.textContent = 'FFmpeg processing — applying transforms...';
       animateProgress(35, 1200);
 
-      // Fake progress ticks while waiting
       const fakeInterval = setInterval(() => {
         const current = parseFloat(progressFill.style.width) || 0;
         if (current < 88) animateProgress(current + Math.random() * 8, 2000);
       }, 3000);
 
-      const response = await fetch('/process', {
-        method: 'POST',
-        body: formData,
-      });
+      const response = await fetch('/process', { method: 'POST', body: formData });
 
       clearInterval(fakeInterval);
 
