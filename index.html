@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REHASH — Video Fingerprint Scrambler</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&display=swap');
+
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --border: #222222;
+    --accent: #c8f53a;
+    --accent2: #ff3a6e;
+    --text: #e8e8e8;
+    --muted: #555;
+    --radius: 4px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(200,245,58,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(200,245,58,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 620px;
+  }
+
+  header {
+    margin-bottom: 48px;
+    text-align: left;
+  }
+
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(52px, 12vw, 96px);
+    line-height: 0.9;
+    letter-spacing: 2px;
+    color: var(--accent);
+    text-shadow: 4px 4px 0 rgba(200,245,58,0.15);
+  }
+
+  .logo span {
+    color: var(--accent2);
+  }
+
+  .tagline {
+    margin-top: 12px;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  /* Drop zone */
+  .dropzone {
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 56px 32px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    position: relative;
+    background: var(--surface);
+  }
+
+  .dropzone:hover,
+  .dropzone.dragover {
+    border-color: var(--accent);
+    background: rgba(200,245,58,0.04);
+  }
+
+  .dropzone input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+
+  .drop-icon {
+    font-size: 40px;
+    margin-bottom: 16px;
+    display: block;
+    opacity: 0.6;
+  }
+
+  .drop-label {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+
+  .drop-label strong {
+    color: var(--accent);
+    display: block;
+    font-size: 15px;
+    margin-bottom: 4px;
+  }
+
+  .file-formats {
+    margin-top: 10px;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: #333;
+    text-transform: uppercase;
+  }
+
+  /* Selected file display */
+  .file-info {
+    display: none;
+    margin-top: 20px;
+    padding: 16px 20px;
+    background: rgba(200,245,58,0.06);
+    border: 1px solid rgba(200,245,58,0.2);
+    border-radius: var(--radius);
+    font-size: 12px;
+    color: var(--accent);
+    display: none;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .file-info.visible {
+    display: flex;
+  }
+
+  .file-info .file-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .file-size {
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  /* Params panel */
+  .params-panel {
+    display: none;
+    margin-top: 16px;
+    padding: 16px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 11px;
+  }
+
+  .params-panel.visible { display: block; }
+
+  .params-title {
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  .params-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 24px;
+  }
+
+  .param-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+    border-bottom: 1px solid #1a1a1a;
+  }
+
+  .param-key { color: var(--muted); }
+  .param-val { color: var(--accent); font-weight: 700; }
+
+  /* Button */
+  .btn {
+    width: 100%;
+    margin-top: 24px;
+    padding: 18px;
+    background: var(--accent);
+    color: #0a0a0a;
+    border: none;
+    border-radius: var(--radius);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 3px;
+    cursor: pointer;
+    transition: transform 0.1s, background 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn:disabled {
+    background: #2a2a2a;
+    color: var(--muted);
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .btn:not(:disabled):hover { background: #d4ff45; transform: translateY(-1px); }
+  .btn:not(:disabled):active { transform: translateY(1px); }
+
+  /* Progress bar */
+  .progress-wrap {
+    display: none;
+    margin-top: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+  }
+
+  .progress-wrap.visible { display: block; }
+
+  .progress-label {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .progress-bar-bg {
+    background: var(--border);
+    border-radius: 2px;
+    height: 4px;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--accent);
+    width: 0%;
+    transition: width 0.3s;
+    border-radius: 2px;
+    animation: pulse-bar 1.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse-bar {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+
+  .status-line {
+    margin-top: 10px;
+    font-size: 11px;
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  /* Result */
+  .result {
+    display: none;
+    margin-top: 20px;
+    padding: 20px;
+    background: rgba(200,245,58,0.06);
+    border: 1px solid rgba(200,245,58,0.3);
+    border-radius: var(--radius);
+    text-align: center;
+  }
+
+  .result.visible { display: block; }
+
+  .result-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    color: var(--accent);
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+  }
+
+  .result-sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+
+  .btn-download {
+    display: inline-block;
+    padding: 12px 32px;
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    letter-spacing: 1px;
+  }
+
+  .btn-download:hover {
+    background: var(--accent);
+    color: #0a0a0a;
+  }
+
+  /* Error */
+  .error-box {
+    display: none;
+    margin-top: 20px;
+    padding: 16px 20px;
+    background: rgba(255,58,110,0.08);
+    border: 1px solid rgba(255,58,110,0.3);
+    border-radius: var(--radius);
+    font-size: 12px;
+    color: var(--accent2);
+  }
+
+  .error-box.visible { display: block; }
+
+  footer {
+    margin-top: 48px;
+    font-size: 10px;
+    color: #333;
+    letter-spacing: 2px;
+    text-align: center;
+  }
+
+  footer span { color: var(--accent2); }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+  <header>
+    <div class="logo">RE<span>HASH</span></div>
+    <div class="tagline">Video Fingerprint Scrambler — Evade Duplicate Detection</div>
+  </header>
+
+  <div class="dropzone" id="dropzone">
+    <input type="file" id="fileInput" accept="video/*" />
+    <span class="drop-icon">⬡</span>
+    <div class="drop-label">
+      <strong>Drop your video here</strong>
+      or click to browse
+    </div>
+    <div class="file-formats">MP4 · MOV · AVI · MKV · WEBM</div>
+  </div>
+
+  <div class="file-info" id="fileInfo">
+    <span>▶</span>
+    <span class="file-name" id="fileName">—</span>
+    <span class="file-size" id="fileSize">—</span>
+  </div>
+
+  <div class="params-panel" id="paramsPanel">
+    <div class="params-title">Randomized Transform Parameters</div>
+    <div class="params-grid" id="paramsGrid"></div>
+  </div>
+
+  <button class="btn" id="processBtn" disabled>SCRAMBLE FINGERPRINT</button>
+
+  <div class="progress-wrap" id="progressWrap">
+    <div class="progress-label">
+      <span>Processing via FFmpeg</span>
+      <span id="progressPct">—</span>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progressFill"></div>
+    </div>
+    <div class="status-line" id="statusLine">Uploading file...</div>
+  </div>
+
+  <div class="result" id="result">
+    <div class="result-title">✓ REHASHED</div>
+    <div class="result-sub">New MD5 · New perceptual fingerprint · Ready to repost</div>
+    <a class="btn-download" id="downloadLink" href="#" download>↓ Download File</a>
+  </div>
+
+  <div class="error-box" id="errorBox"></div>
+
+  <footer>
+    CENTIPEDE DEV · <span>REHASH</span> · runs locally via Flask + FFmpeg
+  </footer>
+</div>
+
+<script>
+  const dropzone = document.getElementById('dropzone');
+  const fileInput = document.getElementById('fileInput');
+  const fileInfo = document.getElementById('fileInfo');
+  const fileName = document.getElementById('fileName');
+  const fileSize = document.getElementById('fileSize');
+  const processBtn = document.getElementById('processBtn');
+  const progressWrap = document.getElementById('progressWrap');
+  const progressFill = document.getElementById('progressFill');
+  const progressPct = document.getElementById('progressPct');
+  const statusLine = document.getElementById('statusLine');
+  const result = document.getElementById('result');
+  const downloadLink = document.getElementById('downloadLink');
+  const errorBox = document.getElementById('errorBox');
+  const paramsPanel = document.getElementById('paramsPanel');
+  const paramsGrid = document.getElementById('paramsGrid');
+
+  let selectedFile = null;
+
+  function formatBytes(bytes) {
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  }
+
+  function randomParams() {
+    return {
+      'Hue shift': (Math.random() * 2 + 1.5).toFixed(2) + '°',
+      'Saturation': '+' + (Math.random() * 6 + 2).toFixed(1) + '%',
+      'Brightness': '+' + (Math.random() * 2 + 1).toFixed(2),
+      'Contrast': '+' + (Math.random() * 3 + 1).toFixed(2) + '%',
+      'Crop': (Math.random() * 2.5 + 1.5).toFixed(1) + '% edges',
+      'Speed': (Math.random() > 0.5 ? '+' : '-') + (Math.random() * 3 + 1).toFixed(1) + '%',
+      'CRF': Math.floor(Math.random() * 6 + 20),
+      'Encode': 'libx264 / fast',
+    };
+  }
+
+  function showParams() {
+    const params = randomParams();
+    paramsGrid.innerHTML = Object.entries(params).map(([k, v]) =>
+      `<div class="param-row"><span class="param-key">${k}</span><span class="param-val">${v}</span></div>`
+    ).join('');
+    paramsPanel.classList.add('visible');
+  }
+
+  function onFileSelected(file) {
+    if (!file) return;
+    selectedFile = file;
+    fileName.textContent = file.name;
+    fileSize.textContent = formatBytes(file.size);
+    fileInfo.classList.add('visible');
+    processBtn.disabled = false;
+    result.classList.remove('visible');
+    errorBox.classList.remove('visible');
+    showParams();
+  }
+
+  fileInput.addEventListener('change', e => onFileSelected(e.target.files[0]));
+
+  dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('dragover'); });
+  dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+  dropzone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropzone.classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file) onFileSelected(file);
+  });
+
+  function animateProgress(targetPct, duration = 800) {
+    const start = parseFloat(progressFill.style.width) || 0;
+    const diff = targetPct - start;
+    const startTime = Date.now();
+    function step() {
+      const elapsed = Date.now() - startTime;
+      const pct = Math.min(elapsed / duration, 1);
+      const current = start + diff * pct;
+      progressFill.style.width = current + '%';
+      progressPct.textContent = Math.floor(current) + '%';
+      if (pct < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  processBtn.addEventListener('click', async () => {
+    if (!selectedFile) return;
+
+    processBtn.disabled = true;
+    result.classList.remove('visible');
+    errorBox.classList.remove('visible');
+    progressWrap.classList.add('visible');
+    progressFill.style.width = '0%';
+    progressPct.textContent = '0%';
+    statusLine.textContent = 'Uploading file...';
+
+    animateProgress(15, 600);
+
+    const formData = new FormData();
+    formData.append('video', selectedFile);
+
+    try {
+      statusLine.textContent = 'FFmpeg processing — applying transforms...';
+      animateProgress(35, 1200);
+
+      // Fake progress ticks while waiting
+      const fakeInterval = setInterval(() => {
+        const current = parseFloat(progressFill.style.width) || 0;
+        if (current < 88) animateProgress(current + Math.random() * 8, 2000);
+      }, 3000);
+
+      const response = await fetch('/process', {
+        method: 'POST',
+        body: formData,
+      });
+
+      clearInterval(fakeInterval);
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error(err.error || 'Server error');
+      }
+
+      animateProgress(100, 400);
+      statusLine.textContent = 'Done. New fingerprint generated.';
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const origName = selectedFile.name.replace(/\.[^.]+$/, '');
+      const ext = selectedFile.name.split('.').pop();
+
+      downloadLink.href = url;
+      downloadLink.download = `rehashed_${origName}.${ext}`;
+
+      setTimeout(() => {
+        progressWrap.classList.remove('visible');
+        result.classList.add('visible');
+        processBtn.disabled = false;
+      }, 600);
+
+    } catch (err) {
+      progressWrap.classList.remove('visible');
+      errorBox.textContent = '✗ Error: ' + err.message;
+      errorBox.classList.add('visible');
+      processBtn.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>
