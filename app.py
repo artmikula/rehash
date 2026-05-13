@@ -100,7 +100,7 @@ def build_ffmpeg_command(input_path, output_path):
         *maps,
         "-c:v", "libx264",
         "-crf", str(crf),
-        "-preset", "fast",
+        "-preset", "veryfast",
         "-g", str(random.randint(48, 96)),
         "-keyint_min", str(random.randint(24, 48)),
         "-c:a", "aac",

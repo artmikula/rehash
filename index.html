@@ -684,8 +684,6 @@
     <div class="params-grid" id="paramsGrid"></div>
   </div>
 
-  <button class="btn" id="processBtn" disabled>SCRAMBLE FINGERPRINT</button>
-
   <div class="progress-wrap" id="progressWrap">
     <div class="progress-label">
       <span>Transform Pipeline</span>
@@ -696,6 +694,8 @@
     </div>
     <div class="status-line" id="statusLine">Uploading file...</div>
   </div>
+
+  <button class="btn" id="processBtn" disabled>SCRAMBLE FINGERPRINT</button>
 
   <div class="result" id="result">
     <div class="result-title">✓ REHASHED</div>
@@ -800,6 +800,7 @@
     result.classList.remove('visible');
     errorBox.classList.remove('visible');
     progressWrap.classList.add('visible');
+    progressWrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
     progressFill.style.width = '0%';
     progressPct.textContent = '0%';
     statusLine.textContent = 'Uploading file...';
